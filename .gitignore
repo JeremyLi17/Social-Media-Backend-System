@@ -1,3 +1,7 @@
+.idea
+.pycharm_helpers/
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -130,4 +134,3 @@ dmypy.json
 bionic64.box
 Vagrantfile
 .vagrant/
-.DS_Store
