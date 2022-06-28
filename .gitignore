@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+bionic64.box
+Vagrantfile
+.vagrant/
