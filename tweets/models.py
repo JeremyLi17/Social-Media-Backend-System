@@ -2,12 +2,13 @@ from django.db import models
 from django.contrib.auth.models import User
 from utils.time_helpers import utc_now
 
-
 """
 user: 这篇Tweet是谁发的
 content: Tweet内容 -> 只有文本
 create_at: 创建时间
 """
+
+
 class Tweet(models.Model):
     # User是foreignKey -> on_delete一定要设为SET_NULL
     # 然后因为设置了SET_NULL，那null要设置为True -> 表示可以为空
@@ -21,6 +22,12 @@ class Tweet(models.Model):
     content = models.CharField(max_length=255)
     # auto_now_add -> 创建的时候自动去计算创建时间
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # 联合索引 compound(composite ) index
+        index_together = (('user', 'created_at'),)
+        # QuerySet默认排序，不会对数据库造成影响和改变
+        ordering = ('user', '-created_at')
 
     @property
     def hours_to_now(self):
