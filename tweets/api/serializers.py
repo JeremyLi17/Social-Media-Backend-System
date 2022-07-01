@@ -9,8 +9,19 @@ class TweetSerializer(serializers.ModelSerializer):
     user = UserSerializerForTweet()
 
     class Meta:
-        model = Tweet # 展示的model类型
-        fields = ('id', 'user', 'created_at','content') # 展示的field
+        model = Tweet  # 展示的model类型
+        fields = ('id', 'user', 'created_at', 'content')  # 展示的field
+
+
+class TweetSerializerForNewsFeed(serializers.ModelSerializer):
+
+    """
+    Serializer for NewsFeed return
+    """
+
+    class Meta:
+        model = Tweet  # 展示的model类型
+        fields = ('id', 'content')  # 展示的field
 
 
 class TweetSerializerForCreate(serializers.ModelSerializer):

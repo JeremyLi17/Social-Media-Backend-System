@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from tweets.api.serializers import TweetSerializer, TweetSerializerForCreate
 from tweets.models import Tweet
+from newsfeeds.services import NewsFeedServices
 
 
 class TweetViewSet(viewsets.GenericViewSet,
@@ -55,6 +56,10 @@ class TweetViewSet(viewsets.GenericViewSet,
         # 创建tweet对象
         # call create method in TweetSerializerForCreate
         tweet = serializer.save()
+
+        # 发送tweet之后 - 在newsfeed表中给发布者每个follower添加数据
+        NewsFeedServices.fanout_to_followers(tweet)
+
         # TweetSerializer(tweet).data本身就是一个dict了 就不用加{}了
         return Response(TweetSerializer(tweet).data, status=201)
 

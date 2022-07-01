@@ -1,6 +1,7 @@
 from django.test import TestCase as DjangoTestCase
 from django.contrib.auth.models import User
 from tweets.models import Tweet
+from rest_framework.test import APIClient
 
 
 # 重写了Django自己的TestCase类 -> 实现一些所有test都需要的做的
@@ -20,3 +21,11 @@ class TestCase(DjangoTestCase):
         if content is None:
             content = 'default tweet content'
         return Tweet.objects.create(user=user, content=content)
+
+    @property
+    def anonymous_client(self):
+        # 内部缓存 -> 这样不会每跑一个test都要创建一个APIClient()
+        if hasattr(self, '_anonymous_client'):
+            return self._anonymous_client
+        self._anonymous_client = APIClient()
+        return self._anonymous_client
