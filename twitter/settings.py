@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # 用startapp创建的都要记得加进来
     'tweets',
     'friendships',
+    'newsfeeds',
 ]
 
 REST_FRAMEWORK = {
