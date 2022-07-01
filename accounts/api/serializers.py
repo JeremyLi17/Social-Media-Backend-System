@@ -13,9 +13,18 @@ class UserSerializerForTweet(serializers.ModelSerializer):
     """
     Serializer for tweets return
     """
+
     class Meta:
         model = User
         fields = ['id', 'username']
+
+
+class UserSerializerForFriendship(UserSerializerForTweet):
+    """
+    Serializer for friendships return
+    这种继承 + 什么都不写 + pass -> 相当于别名
+    """
+    pass
 
 
 class LoginSerializer(serializers.Serializer):

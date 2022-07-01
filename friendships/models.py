@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class Friendships(models.Model):
+class Friendship(models.Model):
     # 用户实例可以通过user1.following_friendship_set.all()获得user1全部的关注
     # 当一个Model只有一个foreignKey的时候related_name可以不设置
     # 可以直接通过user1.friendships.all()访问
