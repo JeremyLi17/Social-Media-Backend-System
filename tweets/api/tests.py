@@ -6,6 +6,7 @@ from tweets.models import Tweet
 # 要测试的API的URL -> 结尾一定要加"/" 不然会返回301 redirect
 TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
+TWEET_RETRIEVE_API = '/api/tweets/{}/'
 
 
 # 用自己重写过带有create_user和create_tweet的TestCase类
@@ -14,7 +15,7 @@ class TweetApiTests(TestCase):
     # setUp是在每一个Unit test被执行之前会被执行的 -> 准备阶段
     def setUp(self):
         # 默认APIClient是未登陆(匿名)用户
-        self.anonymous_client = APIClient()
+        # 已经抽取到TestCase里了，不用重复定义
 
         # 创建登陆用户
         self.user1 = self.create_user('user1')
@@ -83,3 +84,22 @@ class TweetApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['user']['id'], self.user1.id)
         self.assertEqual(Tweet.objects.count(), tweets_count + 1)
+
+    def test_retrieve(self):
+        # tweet with id=-1 does not exist
+        url = TWEET_RETRIEVE_API.format(-1)
+        response = self.anonymous_client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+        # 获取某个 tweet 的时候会一起把 comments 也拿下
+        tweet = self.create_tweet(self.user1)
+        url = TWEET_RETRIEVE_API.format(tweet.id)
+        response = self.anonymous_client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['comments']), 0)
+
+        self.create_comment(self.user2, tweet, 'holly s***')
+        self.create_comment(self.user1, tweet, 'hmm...')
+        self.create_comment(self.user1, self.create_tweet(self.user2), '...')
+        response = self.anonymous_client.get(url)
+        self.assertEqual(len(response.data['comments']), 2)

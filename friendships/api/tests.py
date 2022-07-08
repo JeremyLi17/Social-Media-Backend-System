@@ -14,8 +14,7 @@ FOLLOWINGS_URL = '/api/friendships/{}/followings/'
 class FriendshipApiTests(TestCase):
 
     def setUp(self):
-        # 1. 匿名用户
-        self.anonymous_client = APIClient()
+        # 1. 匿名用户 -> 已经放到testCase里了，因此不用重复定义
 
         # 两个登陆用户user1和user2
         self.user1 = self.create_user('user1')
