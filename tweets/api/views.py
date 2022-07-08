@@ -1,9 +1,14 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from tweets.api.serializers import TweetSerializer, TweetSerializerForCreate
+from tweets.api.serializers import (
+    TweetSerializer,
+    TweetSerializerForCreate,
+    TweetSerializerWithComments,
+)
 from tweets.models import Tweet
 from newsfeeds.services import NewsFeedServices
+from utils.decorators import required_params
 
 
 class TweetViewSet(viewsets.GenericViewSet,
@@ -17,17 +22,20 @@ class TweetViewSet(viewsets.GenericViewSet,
     # 创建时表单的样子
     serializer_class = TweetSerializerForCreate
 
+    @required_params(params=['user_id'])
     def list(self, request, *args, **kwargs):
         # 必须要求指定 user_id 作为筛选条件
-        # 如果没有 user_id -> 400
-        if 'user_id' not in request.query_params:
-            return Response('missing user_id', status=400)
+        # 如果没有 user_id -> 400 [用decorator进行了简化]
+        # if 'user_id' not in request.query_params:
+        #     return Response('missing user_id', status=400)
 
         # 取出该用户所有的Tweets
         # request.query_params -> 请求的data
         user_id = request.query_params['user_id']
         # order_by -> 根据created_at 倒序拍
-        tweets = Tweet.objects.filter(user_id=user_id).order_by('-created_at')
+        tweets = Tweet.objects.filter(
+            user_id=user_id
+        ).order_by('-created_at')
 
         # Serializer传入的是QuerySet
         # 如果many=True 则表示传入的是list of dict
@@ -66,8 +74,16 @@ class TweetViewSet(viewsets.GenericViewSet,
     # 权限管理
     def get_permissions(self):
         # self.action -> 对应是调用的方法名(create, list...)
-        if self.action == 'list':
+        if self.action in ['list', 'retrieve']:
             # 允许任何人都能访问
             return [AllowAny()]
         # 必须登陆
         return [IsAuthenticated()]
+
+    def retrieve(self, request, *args, **kwargs):
+        # get_object -> 获得querySet
+        tweet = self.get_object()
+        return Response(
+            TweetSerializerWithComments(tweet).data,
+            status=status.HTTP_200_OK,
+        )
