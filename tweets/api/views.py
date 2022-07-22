@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from tweets.api.serializers import (
     TweetSerializer,
     TweetSerializerForCreate,
-    TweetSerializerWithComments,
+    TweetSerializerForDetail,
 )
 from tweets.models import Tweet
 from newsfeeds.services import NewsFeedServices
@@ -39,7 +39,11 @@ class TweetViewSet(viewsets.GenericViewSet,
 
         # Serializer传入的是QuerySet
         # 如果many=True 则表示传入的是list of dict
-        serializer = TweetSerializer(tweets, many=True)
+        serializer = TweetSerializer(
+            tweets,
+            context={"request": request},
+            many=True,
+        )
 
         # 约定俗成 -> JSON的最外层默认是一个dict,一般不直接返回list
         return Response({'tweets': serializer.data})
@@ -69,7 +73,10 @@ class TweetViewSet(viewsets.GenericViewSet,
         NewsFeedServices.fanout_to_followers(tweet)
 
         # TweetSerializer(tweet).data本身就是一个dict了 就不用加{}了
-        return Response(TweetSerializer(tweet).data, status=201)
+        return Response(
+            TweetSerializer(tweet, context={"request": request}).data,
+            status=201,
+        )
 
     # 权限管理
     def get_permissions(self):
@@ -84,6 +91,6 @@ class TweetViewSet(viewsets.GenericViewSet,
         # get_object -> 获得querySet
         tweet = self.get_object()
         return Response(
-            TweetSerializerWithComments(tweet).data,
+            TweetSerializerForDetail(tweet, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )

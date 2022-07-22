@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from newsfeeds.models import NewsFeed
-from tweets.api.serializers import TweetSerializerForNewsFeed
+from tweets.api.serializers import TweetSerializer
 
 
 class NewsFeedSerializer(serializers.ModelSerializer):
-    tweet = TweetSerializerForNewsFeed()
+    tweet = TweetSerializer()
 
     class Meta:
         model = NewsFeed
