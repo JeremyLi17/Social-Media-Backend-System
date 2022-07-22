@@ -70,7 +70,7 @@ class CommentViewSet(viewsets.GenericViewSet):
 
         # 创建成功 -> 返回 201 (返回的信息用CommentSerializer展示)
         return Response(
-            CommentSerializer(comment).data,
+            CommentSerializer(comment, context={"request": request}).data,
             status=status.HTTP_201_CREATED
         )
 
@@ -96,7 +96,12 @@ class CommentViewSet(viewsets.GenericViewSet):
         queryset = self.get_queryset()
         # filter_queryset -> 用到filterset_fields
         comments = self.filter_queryset(queryset).order_by('created_at')
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(
+            comments,
+            context={'request': request},
+            many=True,
+        )
+
         return Response({
             'comments': serializer.data,
         }, status=status.HTTP_200_OK)
@@ -117,7 +122,7 @@ class CommentViewSet(viewsets.GenericViewSet):
         # 因为在构建serializer的时候传入了instance, 所以会call update()
         comment = serializer.save()
         return Response(
-            CommentSerializer(comment).data,
+            CommentSerializer(comment, context={"request": request}).data,
             status=status.HTTP_200_OK
         )
 

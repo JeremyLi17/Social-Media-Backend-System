@@ -1,8 +1,12 @@
-from django.test import TestCase as DjangoTestCase
 from django.contrib.auth.models import User
-from comments.models import Comment
-from tweets.models import Tweet
+from django.contrib.contenttypes.models import ContentType
+from django.test import TestCase as DjangoTestCase
 from rest_framework.test import APIClient
+
+from comments.models import Comment
+from likes.models import Like
+from newsfeeds.models import NewsFeed
+from tweets.models import Tweet
 
 
 # 重写了Django自己的TestCase类 -> 实现一些所有test都需要的做的
@@ -28,6 +32,12 @@ class TestCase(DjangoTestCase):
             content = 'default comment content'
         return Comment.objects.create(user=user, tweet=tweet, content=content)
 
+    def create_user_and_client(self, *args, **kwargs):
+        user = self.create_user(*args, **kwargs)
+        client = APIClient()
+        client.force_authenticate(user)
+        return user, client
+
     @property
     def anonymous_client(self):
         # 内部缓存 -> 这样不会每跑一个test都要创建一个APIClient()
@@ -35,3 +45,14 @@ class TestCase(DjangoTestCase):
             return self._anonymous_client
         self._anonymous_client = APIClient()
         return self._anonymous_client
+
+    def create_newsfeed(self, user, tweet):
+        return NewsFeed.objects.create(user=user, tweet=tweet)
+
+    def create_like(self, user, target):
+        instance, _ = Like.objects.get_or_create(
+            content_type=ContentType.objects.get_for_model(target.__class__),
+            object_id=target.id,
+            user=user,
+        )
+        return instance
