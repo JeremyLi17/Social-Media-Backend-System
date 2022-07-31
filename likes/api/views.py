@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from inbox.services import NotificationService
 from likes.api.serializers import (
     LikeSerializerForCreate,
     LikeSerializer,
@@ -19,7 +20,7 @@ class LikeViewSet(viewsets.GenericViewSet):
 
     # must have content_type and object_id
     # create 是 post, request_attr用data
-    @required_params(request_attr='data', params=['content_type', 'object_id'])
+    @required_params(method='POST', params=['content_type', 'object_id'])
     def create(self, request, *args, **kwargs):
         serializer = LikeSerializerForCreate(
             data=request.data,
@@ -32,7 +33,12 @@ class LikeViewSet(viewsets.GenericViewSet):
                 'errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        instance = serializer.save()
+        # 避免重复发送
+        instance, created = serializer.get_or_create()
+        if created:
+            # send notification
+            NotificationService.send_like_notification(instance)
+
         return Response(
             LikeSerializer(instance).data,
             status=status.HTTP_201_CREATED,
@@ -40,7 +46,7 @@ class LikeViewSet(viewsets.GenericViewSet):
 
     # detail = False -> 不需要对应的ID
     @action(methods=['POST'], detail=False)
-    @required_params(request_attr='data', params=['content_type', 'object_id'])
+    @required_params(method='POST', params=['content_type', 'object_id'])
     def cancel(self, request, *args, **kwargs):
         # 自定义API -> 需要import rest_framework的action
         serializer = LikeSerializerForCancel(
