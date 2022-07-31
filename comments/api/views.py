@@ -8,13 +8,12 @@ from comments.api.serializers import (
 )
 from comments.models import Comment
 from comments.api.permissions import IsObjectOwner
-
-
-# 通用的做法：继承GenericViewSet
+from inbox.services import NotificationService
 from utils.decorators import required_params
 
 
 class CommentViewSet(viewsets.GenericViewSet):
+    # 通用的做法：继承GenericViewSet
     """
     实现：list, create, update, destroy
     不实现retrieve -> 查询单个comment的请求
@@ -67,6 +66,9 @@ class CommentViewSet(viewsets.GenericViewSet):
 
         # 通过save调用serializer里的create方法
         comment = serializer.save()
+
+        # send comment notification
+        NotificationService.send_comment_notification(comment)
 
         # 创建成功 -> 返回 201 (返回的信息用CommentSerializer展示)
         return Response(

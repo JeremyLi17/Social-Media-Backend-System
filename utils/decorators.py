@@ -3,7 +3,7 @@ from rest_framework import status
 from functools import wraps
 
 
-def required_params(request_attr='query_params', params=None):
+def required_params(method='GET', params=None):
     """
     使用decorator -> 进行代码简化
     if ... not in request.query_params: return 400
@@ -35,9 +35,14 @@ def required_params(request_attr='query_params', params=None):
         """
         @wraps(view_func)
         def _wrapped_view(instance, request, *args, **kwargs):
+            if method.lower() == 'get':
+                data = request.query_params
+            else:
+                data = request.data
+
             # getattr -> 等于request.request_attr
             # 因为这里request_attr是string类型，因此只能用getattr
-            data = getattr(request, request_attr)
+            # data = getattr(request, request_attr)
 
             # params是必须有的参数 -> params里有，但data里没有的param
             missing_params = [
