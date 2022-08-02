@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'notifications',
 
     # 用startapp创建的要加进来 (project apps)
+    'accounts',
     'tweets',
     'friendships',
     'newsfeeds',
